@@ -14,5 +14,8 @@
   "system": "Sistem",
   "light": "Terang",
   "dark": "Gelap",
-  "language": "Bahasa"
+  "language": "Bahasa",
+  "tap_to_enter_latex": "Ketuk untuk memasukkan LaTeX",
+  "edit_latex": "Edit Formula LaTeX",
+  "math_hint": "rumus..."
 }
