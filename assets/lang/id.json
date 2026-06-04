@@ -1,0 +1,18 @@
+{
+  "app_title": "Pepen",
+  "open": "Buka",
+  "save_as_pepn": "Simpan sebagai .pepn",
+  "save_as_txt": "Simpan sebagai .txt",
+  "export_pdf": "Ekspor ke PDF",
+  "settings": "Pengaturan",
+  "add_section": "Tambah Bagian",
+  "start_of_document": "Awal Dokumen",
+  "new_section": "Bagian Baru",
+  "type_here": "Ketik di sini...",
+  "theme_mode": "Mode Tema",
+  "global_font": "Font Global",
+  "system": "Sistem",
+  "light": "Terang",
+  "dark": "Gelap",
+  "language": "Bahasa"
+}

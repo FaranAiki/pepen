@@ -1,0 +1,18 @@
+{
+  "app_title": "Pepen",
+  "open": "Open",
+  "save_as_pepn": "Save as .pepn",
+  "save_as_txt": "Save as .txt",
+  "export_pdf": "Export as PDF",
+  "settings": "Settings",
+  "add_section": "Add Section",
+  "start_of_document": "Start of Document",
+  "new_section": "New Section",
+  "type_here": "Type here...",
+  "theme_mode": "Theme Mode",
+  "global_font": "Global Font",
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark",
+  "language": "Language"
+}
