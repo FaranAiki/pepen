@@ -1,10 +1,10 @@
+import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import '../editor/models/field_block.dart';
 
 class PdfExportService {
-  static Future<void> exportToPdf(List<FieldBlock> blocks) async {
+  static Future<Uint8List> exportToPdf(List<FieldBlock> blocks) async {
     final pdf = pw.Document();
 
     for (var block in blocks) {
@@ -15,14 +15,12 @@ class PdfExportService {
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
-            return pw.Text(text); // Simple text export for now
+            return pw.Text(text); 
           },
         ),
       );
     }
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
+    return await pdf.save();
   }
 }

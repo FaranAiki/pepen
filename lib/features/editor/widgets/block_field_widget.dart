@@ -56,7 +56,7 @@ class _BlockFieldWidgetState extends State<BlockFieldWidget> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8.0),
+        margin: const EdgeInsets.symmetric(vertical: 4.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -69,7 +69,7 @@ class _BlockFieldWidgetState extends State<BlockFieldWidget> {
                   Text(
                     widget.isFirst ? l10n.translate('start_of_document') : l10n.translate('new_section'),
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 12, // Slightly larger label
                       fontWeight: FontWeight.bold,
                       color: Colors.grey[400],
                     ),
@@ -77,7 +77,7 @@ class _BlockFieldWidgetState extends State<BlockFieldWidget> {
                   const Spacer(),
                   if (widget.showRemove)
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, size: 14),
+                      icon: const Icon(Icons.delete_outline, size: 18),
                       onPressed: widget.onRemove,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -86,7 +86,6 @@ class _BlockFieldWidgetState extends State<BlockFieldWidget> {
                 ],
               ),
             ),
-            if (_isHovered) const Divider(height: 1, thickness: 0.5),
             QuillEditor(
               controller: widget.block.controller,
               scrollController: ScrollController(),
@@ -97,6 +96,15 @@ class _BlockFieldWidgetState extends State<BlockFieldWidget> {
                 padding: EdgeInsets.zero,
                 placeholder: l10n.translate('type_here'),
                 embedBuilders: FlutterQuillEmbeds.editorBuilders(),
+                customStyles: DefaultStyles(
+                  paragraph: DefaultTextBlockStyle(
+                    const TextStyle(color: Colors.black, fontSize: 16, height: 1.5), // Standard reading size
+                    const HorizontalSpacing(0, 0),
+                    const VerticalSpacing(0, 0),
+                    const VerticalSpacing(0, 0),
+                    null,
+                  ),
+                ),
               ),
             ),
           ],

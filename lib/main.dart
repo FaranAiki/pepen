@@ -63,10 +63,8 @@ class PepenApp extends StatelessWidget {
         brightness: Brightness.dark,
         colorSchemeSeed: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFF1A1C1E),
-        textTheme: GoogleFonts.getTextTheme(
-          settings.globalFont,
-          ThemeData.dark().textTheme,
-        ),
+        // textTheme: GoogleFonts.getTextTheme(...) is fine for the UI, 
+        // but the editor container will be forced to white.
       ),
       home: const EditorPage(),
     );

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart' as picker;
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
@@ -10,16 +11,10 @@ import '../../../core/settings_provider.dart';
 import '../../../core/app_localizations.dart';
 import '../../storage/file_service.dart';
 import '../../settings/pages/settings_page.dart';
-
 import '../../storage/pdf_export_service.dart';
 
 class EditorPage extends StatelessWidget {
   const EditorPage({super.key});
-
-  void _exportPdf(BuildContext context) {
-    final editor = context.read<EditorProvider>();
-    PdfExportService.exportToPdf(editor.blocks);
-  }
 
   void _showSettings(BuildContext context) {
     showDialog(
@@ -27,11 +22,32 @@ class EditorPage extends StatelessWidget {
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
+          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 650),
           child: const SettingsPage(),
         ),
       ),
     );
+  }
+
+  Future<void> _exportPdf(BuildContext context) async {
+    final editor = context.read<EditorProvider>();
+    final bytes = await PdfExportService.exportToPdf(editor.blocks);
+    
+    String? outputFile = await picker.FilePicker.saveFile(
+      dialogTitle: 'Save PDF',
+      fileName: 'document.pdf',
+      type: picker.FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (outputFile != null) {
+      if (!outputFile.endsWith('.pdf')) outputFile += '.pdf';
+      final file = File(outputFile);
+      await file.writeAsBytes(bytes);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF Saved')));
+      }
+    }
   }
 
   Future<void> _saveAsPepen(BuildContext context, AppLocalizations l10n) async {
@@ -127,30 +143,24 @@ class EditorPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.translate('app_title')),
-        elevation: 0,
-        backgroundColor: Theme.of(context).canvasColor,
-        actions: [
-          IconButton(icon: const Icon(Icons.open_in_browser), onPressed: () => _openFile(context, l10n), tooltip: l10n.translate('open')),
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'pepn') _saveAsPepen(context, l10n);
-              if (value == 'txt') _saveAsTxt(context, l10n);
-              if (value == 'pdf') _exportPdf(context);
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'pepn', child: Text(l10n.translate('save_as_pepn'))),
-              PopupMenuItem(value: 'txt', child: Text(l10n.translate('save_as_txt'))),
-              PopupMenuItem(value: 'pdf', child: Text(l10n.translate('export_pdf'))),
-            ],
-            icon: const Icon(Icons.save),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2))),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showSettings(context),
+          child: SafeArea(
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                const Icon(Icons.description, color: Colors.blue, size: 24),
+                const SizedBox(width: 24),
+                _buildMenuBar(context, l10n),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
       body: Column(
         children: [
@@ -183,6 +193,11 @@ class EditorPage extends StatelessWidget {
                     showClearFormat: true,
                     showAlignmentButtons: true,
                     multiRowsDisplay: false,
+                    buttonOptions: const quill.QuillSimpleToolbarButtonOptions(
+                      base: quill.QuillToolbarBaseButtonOptions(
+                        iconSize: 20,
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -198,51 +213,135 @@ class EditorPage extends StatelessWidget {
                   child: Center(
                     child: Container(
                       constraints: const BoxConstraints(maxWidth: 850),
-                      margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 16),
-                      padding: const EdgeInsets.all(40),
+                      margin: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 80),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.light 
-                          ? Colors.white 
-                          : Colors.grey[900],
+                        color: Colors.white,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ...provider.blocks.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final block = entry.value;
-                            return BlockFieldWidget(
-                              key: ValueKey(block.id),
-                              block: block,
-                              onRemove: () => provider.removeBlock(block.id),
-                              showRemove: blockCount > 1,
-                              isFirst: index == 0,
-                            );
-                          }),
-                          const SizedBox(height: 20),
-                          Center(
-                            child: ElevatedButton.icon(
-                              onPressed: () => provider.addBlock(),
-                              icon: const Icon(Icons.add),
-                              label: Text(l10n.translate('add_section')),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              ),
-                            ),
+                      child: Theme(
+                        data: ThemeData(
+                          brightness: Brightness.light,
+                          textTheme: GoogleFonts.getTextTheme('Roboto').apply(
+                            bodyColor: Colors.black,
+                            displayColor: Colors.black,
                           ),
-                        ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ...provider.blocks.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final block = entry.value;
+                              return BlockFieldWidget(
+                                key: ValueKey(block.id),
+                                block: block,
+                                onRemove: () => provider.removeBlock(block.id),
+                                showRemove: blockCount > 1,
+                                isFirst: index == 0,
+                              );
+                            }),
+                            const SizedBox(height: 50),
+                            _buildAddPageButton(context, l10n),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuBar(BuildContext context, AppLocalizations l10n) {
+    return Row(
+      children: [
+        _buildMenuButton(
+          context,
+          'File',
+          [
+            PopupMenuItem(
+              onTap: () => _openFile(context, l10n),
+              child: Text(l10n.translate('open')),
+            ),
+            PopupMenuItem(
+              onTap: () => _saveAsPepen(context, l10n),
+              child: Text(l10n.translate('save_as_pepn')),
+            ),
+            PopupMenuItem(
+              onTap: () => _saveAsTxt(context, l10n),
+              child: Text(l10n.translate('save_as_txt')),
+            ),
+            PopupMenuItem(
+              onTap: () => _exportPdf(context),
+              child: Text(l10n.translate('export_pdf')),
+            ),
+          ],
+        ),
+        _buildMenuButton(
+          context,
+          'Settings',
+          [
+            PopupMenuItem(
+              onTap: () => _showSettings(context),
+              child: Text(l10n.translate('settings')),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuButton(BuildContext context, String title, List<PopupMenuEntry<dynamic>> items) {
+    return PopupMenuButton<dynamic>(
+      offset: const Offset(0, 36),
+      itemBuilder: (context) => items,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16, // Appropriately sized menu text
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddPageButton(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        children: [
+          const Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: () => context.read<EditorProvider>().addBlock(),
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add, size: 20, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  Text(
+                    l10n.translate('add_section'),
+                    style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
